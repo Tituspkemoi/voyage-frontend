@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlaneTakeoff, Mail, MapPin, History } from 'lucide-react';
+import { PlaneTakeoff, History } from 'lucide-react';
 
 function App() {
   const [formData, setFormData] = useState({ destination: '', email: '', passengers: 1 });

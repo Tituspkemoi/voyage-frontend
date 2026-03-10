@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { PlaneTakeoff, Mail, MapPin, History } from 'lucide-react';
 
@@ -7,31 +7,27 @@ function App() {
   const [bookings, setBookings] = useState<any[]>([]); // State to hold our trips
 
   // 1. Function to get bookings from Backend
+  // 1. Updated Fetch: Added /api/bookings/all
   const fetchBookings = async () => {
     try {
-      const res = await axios.get<any[]>("https://voyage-backend-xv95.onrender.com");
+      const res = await axios.get<any[]>("https://voyage-backend-xv95.onrender.com/api/bookings/all");
       setBookings(res.data);
     } catch (err) {
       console.error("Could not fetch bookings", err);
     }
   };
 
-  // 2. Fetch bookings automatically when the page loads
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
+  // 2. Updated Submit: Added /api/bookings/create
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("https://voyage-backend-xv95.onrender.com", formData);
+      await axios.post("https://voyage-backend-xv95.onrender.com/api/bookings/create", formData);
       alert("🌴 Voyage Booked!");
-      fetchBookings(); // Refresh the list after booking!
+      fetchBookings(); 
     } catch (err) {
       alert("❌ Connection Error");
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center py-12 px-6 font-sans">
       
@@ -71,22 +67,22 @@ function App() {
         </div>
         
         <div className="space-y-3">
-          {bookings.length === 0 ? (
-            <p className="text-center text-gray-400 italic">No voyages booked yet...</p>
-          ) : (
-            bookings.map((trip: any) => (
-              <div key={trip._id} className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex justify-between items-center">
-                <div>
-                  <h3 className="font-bold text-gray-800">{trip.destination}</h3>
-                  <p className="text-xs text-gray-500">{trip.email}</p>
-                </div>
-                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
-                  {trip.passengers} Pax
-                </div>
-              </div>
-            ))
-          ).reverse()} {/* Show newest first */}
+  {bookings.length === 0 ? (
+    <p className="text-center text-gray-400 italic">No voyages booked yet...</p>
+  ) : (
+    [...bookings].reverse().map((trip: any) => ( // Use [...bookings] to avoid mutating state
+      <div key={trip._id} className="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm flex justify-between items-center">
+        <div>
+          <h3 className="font-bold text-gray-800">{trip.destination}</h3>
+          <p className="text-xs text-gray-500">{trip.email}</p>
         </div>
+        <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+          {trip.passengers} Pax
+        </div>
+      </div>
+    ))
+  )}
+</div>
       </div>
 
     </div>

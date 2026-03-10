@@ -4,12 +4,12 @@ import { PlaneTakeoff, Mail, MapPin, History } from 'lucide-react';
 
 function App() {
   const [formData, setFormData] = useState({ destination: '', email: '', passengers: 1 });
-  const [bookings, setBookings] = useState([]); // State to hold our trips
+  const [bookings, setBookings] = useState<any[]>([]); // State to hold our trips
 
   // 1. Function to get bookings from Backend
   const fetchBookings = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/bookings/all');
+      const res = await axios.get<any[]>("https://voyage-backend-xv95.onrender.com");
       setBookings(res.data);
     } catch (err) {
       console.error("Could not fetch bookings", err);
@@ -24,7 +24,7 @@ function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/bookings/create', formData);
+      await axios.post("https://voyage-backend-xv95.onrender.com", formData);
       alert("🌴 Voyage Booked!");
       fetchBookings(); // Refresh the list after booking!
     } catch (err) {

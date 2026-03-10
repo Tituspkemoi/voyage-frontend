@@ -1,24 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlaneTakeoff, History } from 'lucide-react';
 
 function App() {
   const [formData, setFormData] = useState({ destination: '', email: '', passengers: 1 });
-  const [bookings, setBookings] = useState<any[]>([]); 
-  const [loading, setLoading] = useState(true);
-
-  const API_URL = "https://voyage-backend-xv95.onrender.com/api/bookings";
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchBookings = async () => {
     try {
-      const res = await axios.get(`${API_URL}/all`);
-      if (Array.isArray(res.data)) {
-        setBookings(res.data);
-      }
+      const res = await axios.get("https://voyage-backend-xv95.onrender.com/api/bookings/all");
+      // Safety check: if the backend sends an object instead of an array
+      const data = Array.isArray(res.data) ? res.data : [];
+      setBookings(data);
     } catch (err) {
-      console.error("Fetch error:", err);
-    } finally {
-      setLoading(false);
+      console.error("API Error:", err);
+      setError("Could not connect to the database.");
     }
   };
 
@@ -29,69 +25,47 @@ function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/create`, formData);
+      await axios.post("https://voyage-backend-xv95.onrender.com/api/bookings/create", formData);
       alert("🌴 Voyage Booked!");
       fetchBookings();
     } catch (err) {
-      alert("❌ Connection Error - Is the backend awake?");
+      alert("❌ Submit Error");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center py-12 px-6">
-      
-      {/* FORM CARD */}
-      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-gray-100 mb-10">
-        <div className="flex flex-col items-center mb-8">
-          <div className="bg-blue-600 p-3 rounded-2xl mb-4">
-            <PlaneTakeoff size={32} className="text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800">Voyage Agency</h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div style={{ minHeight: '100vh', padding: '40px', backgroundColor: '#f8fafc', fontFamily: 'sans-serif' }}>
+      <div style={{ maxWidth: '400px', margin: '0 auto', backgroundColor: 'white', padding: '20px', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+        <h1 style={{ textAlign: 'center', color: '#1e40af' }}>Voyage Agency</h1>
+        <form onSubmit={handleSubmit}>
           <input 
-            type="text" required placeholder="Where to?" 
-            className="w-full p-3 bg-gray-50 border rounded-xl"
+            style={{ width: '100%', marginBottom: '10px', padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }}
+            placeholder="Destination" 
             onChange={e => setFormData({...formData, destination: e.target.value})} 
           />
           <input 
-            type="email" required placeholder="Email Address" 
-            className="w-full p-3 bg-gray-50 border rounded-xl"
+            style={{ width: '100%', marginBottom: '10px', padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }}
+            placeholder="Email" 
             onChange={e => setFormData({...formData, email: e.target.value})} 
           />
-          <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all">
-            Confirm My Voyage
+          <button style={{ width: '100%', padding: '10px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+            Book Now
           </button>
         </form>
       </div>
 
-      {/* LIVE FEED */}
-      <div className="w-full max-w-md">
-        <h2 className="flex items-center gap-2 font-bold text-gray-600 mb-4">
-          <History size={18} /> RECENT BOOKINGS
-        </h2>
-        
-        <div className="space-y-3">
-          {loading ? (
-            <p className="text-center text-gray-400">Loading voyages...</p>
-          ) : bookings.length === 0 ? (
-            <p className="text-center text-gray-400">No voyages found.</p>
-          ) : (
-            // The safe way to reverse and map
-            [...bookings].reverse().map((trip: any) => (
-              <div key={trip._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-                <div>
-                  <h3 className="font-bold text-gray-800">{trip.destination}</h3>
-                  <p className="text-xs text-gray-500">{trip.email}</p>
-                </div>
-                <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
-                  {trip.passengers} Pax
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+      <div style={{ maxWidth: '400px', margin: '20px auto' }}>
+        <h3>Recent Bookings</h3>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {bookings.length > 0 ? (
+          [...bookings].reverse().map((b: any) => (
+            <div key={b._id} style={{ backgroundColor: 'white', padding: '10px', margin: '5px 0', borderRadius: '10px', border: '1px solid #eee' }}>
+              <strong>{b.destination}</strong> - {b.email}
+            </div>
+          ))
+        ) : (
+          <p>No bookings found.</p>
+        )}
       </div>
     </div>
   );
